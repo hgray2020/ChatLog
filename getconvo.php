@@ -19,9 +19,11 @@
 		
 		foreach($messages as $message){
 			if($message['fromUserID'] == $id){
-				echo "<span style = 'float:right;' class ='body" . $user['userID'] . "'>You: " . $message['body'] . "</span><br>";
+				echo "<div style = 'color:#999;margin-right:5%;margin-left:95%'><strong>You</strong></div>";
+				echo "<div style = 'margin-left:35%; position:relative; padding:5px; border:1px solid #3333ef; border-radius:5px;  background:#3333ef; color:#fdfdfd' class ='body" . $user['userID'] . "'>" . $message['body'] . "</div><br>";
 			} else {
-				echo "<span class ='body" . $user['userID'] . "'>" . $user['username'] . ": " . $message['body'] . "</span><br>";
+				echo "<div style = 'color:#999;font-weight:20;'><strong>" . $user['username'] . "</strong></div>";
+				echo "<div style = 'margin-right:35%; position:relative; padding:5px; border:1px solid #ccc; border-radius:5px; background:#ccc;' class ='body" . $user['userID'] . "'>" . $message['body'] . "</div><br>";
 			}
 		}
 		

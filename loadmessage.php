@@ -2,8 +2,13 @@
 session_start();
 ?>
 <style>
+	profile {
+		boder-radius:50%;
+	}
 	* {
 			box-sizing: border-box;
+			font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+   font-weight: 30;
 		}
 	div {
 		//border: 1px solid black;
@@ -52,7 +57,7 @@ if(!isset($_SESSION['toID'])){
 	$_SESSION['toID'] = 0;
 }
 
-echo"<body onmousemove = 'loadConvo();'>";
+//echo"<body onmousemove = 'loadConvo();'>";
 
 require('connect.php');
 $loggedIn = false;
@@ -77,53 +82,19 @@ $str = '"newmessage.php", processPage';
 if($loggedIn){
 	echo "<div style='height:10%;'>
 	<p>Hello, " . $_SESSION['username'] . "</p>
-	<a href='#' onclick='httpGetAsync(" . $str . ");' style = 'padding:10px'>New Message</a>
+	
 	<a href = 'logoutForm.php'>Logout</a>
 	<p></p>
 	
 	</div>
 	<div class='row'>
 		<div class = 'column2'>";
+	echo "<div id='userlist'></div>";
 	$getUsers = "SELECT * FROM users WHERE userID != " . $id;
 	$userStmt = $conn -> query($getUsers);
 	$users = $userStmt -> fetchAll();
 	foreach($users as $user){
-		$getMessagesTo = "SELECT * FROM messagerecipients WHERE toUserID = " . $user['userID'];
-		$messageToStmt = $conn -> query($getMessagesTo);
-		$messagesRTo = $messageToStmt -> fetchAll();
 		
-		$getMessagesFrom = "SELECT * FROM `messages` JOIN messagerecipients ON messages.messageID = messagerecipients.messageID WHERE (messages.fromUserID = " . $id . " AND messagerecipients.toUserID = " . $user['userID'] .") OR (messages.fromUserID = " . $user['userID'] ." AND messagerecipients.toUserID = " . $id .")";
-		$messageFromStmt = $conn -> query($getMessagesFrom);
-		$messages = $messageFromStmt -> fetchAll();
-		//$messageToGet = "SELECT * FROM messages WHERE messageID = " . $messagesRTo[0]['messageID'];
-		for($i = 1; $i < sizeOf($messagesRTo); $i++){
-			//$messageToGet .= " OR messageID = " . $messagesRTo[$i]['messageID'];
-		}
-		
-		
-		
-		
-		
-		
-		
-		$temp = '"' . $user['username'] . '"';
-		if(count($messages) > 0 ){
-			echo "<div style = 'border:1px solid black;' onclick='showBody(" . $user['userID'] . ", " . $temp . ");'>
-			<h3>" . $user['username'] . "</h3>";
-		}
-		
-		foreach($messages as $message){
-			if($message['fromUserID'] == $id){
-				echo "<span class ='body" . $user['userID'] . "' style='display: none;'>You: " . $message['body'] . "</span>";
-			} else {
-				echo "<span class ='body" . $user['userID'] . "' style='display: none;'>" . $user['username'] . ": " . $message['body'] . "</span>";
-			}
-		}
-		
-		
-		if(count($messages) > 0 ){
-			echo "</div> <br />";
-		}
 	}
 	
 	
@@ -173,8 +144,15 @@ if($loggedIn){
 				$sql4 = "INSERT INTO messagerecipients (messageID, toUserID) VALUES (" . $mID . ", " . $toUserID . ")";
 				$stmt4 = $conn -> query($sql4);
 				$_SESSION['nID'] = $user['userID'];
-				echo "<span id = 'showbody' style='display:none;'>" . $_SESSION['toID'] . "</span>";
-				echo "<span id = 'showbody2' style='display:none;'>" . $_SESSION['selected'] . "</span>";
+				
+			}
+			if(isset($_SESSION['toID']) && isset($_SESSION['selected'])){
+					echo "<span id = 'showbody' style='display:none;'>" . $_SESSION['toID'] . "</span>";
+					echo "<span id = 'showbody2' style='display:none;'>" . $_SESSION['selected'] . "</span>";
+			} else {
+				echo "<script>alert('hi!');</script>";
+					echo "<span id = 'showbody' style='display:none;'>0</span>";
+					echo "<span id = 'showbody2' style='display:none;'>' '</span>";
 			}
 		}
 
@@ -188,7 +166,7 @@ if($loggedIn){
 ?>
 
 <script>
-
+loadConvo();
 
 function httpGetAsync(theUrl, callbackWhenPageLoaded) {
 		
@@ -207,8 +185,9 @@ function showBody(n, user, id){
 	
 	document.getElementById('showbody').innerHTML = n;
 	document.getElementById('showbody2').innerHTML = user;
+	document.getElementById('tuser').value = document.getElementById('showbody2').innerHTML;
 	
-	httpGetAsync("setselected.php?s=" +user+"&i="+n);
+	httpGetAsync("setselected.php?s=" +user+"&i="+n, hey);
 	//httpGetAsync("newmessage.php", processPage);
     httpGetAsync("getconvo.php?i="+n, showConvo);
 	//document.getElementById('tuser').value = user;
@@ -216,14 +195,22 @@ function showBody(n, user, id){
 
 	
 }
-
+function hey(n){
+	
+}
+//setInterval(loadConvo, 2000);
 function loadConvo(n){
 	n = document.getElementById('showbody').innerHTML;
-	document.getElementById('tuser').value = document.getElementById('showbody2').innerHTML;
+	//document.getElementById('tuser').value = document.getElementById('showbody2').innerHTML;
 	httpGetAsync("getconvo.php?i="+n, showConvo);
+	document.getElementById('bodyDiv').scrollTop = 500000;
+	httpGetAsync("getusers.php", showUsers);
 	
 }
 
+function showUsers(responseText){
+	document.getElementById('userlist').innerHTML = responseText;
+}
 
 
 function processPage(responseText) {
